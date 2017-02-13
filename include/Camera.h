@@ -8,13 +8,25 @@
 #ifndef CAMERA_H_
 #define CAMERA_H_
 
-#include <SDL2/SDL.h>
+#include "Map.h"
 
-void CreateCamera(unsigned int width, unsigned int height);
+void CreateCamera(unsigned int width, unsigned int height, MapContext*mapContext);
 
-void MoveCamera(SDL_Event*event, float frameTime);
+void RotateCameraLeft();
 
-void RenderCamera(SDL_Renderer*renderer);
+void RotateCameraRight();
+
+void MoveCameraForward();
+
+void MoveCameraBackward();
+
+void MoveCameraLeft();
+
+void MoveCameraRight();
+
+void RenderCamera();
+
+const void*GetCameraBuffer();
 
 void DestroyCamera();
 

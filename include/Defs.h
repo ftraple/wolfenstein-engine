@@ -10,6 +10,7 @@
 
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
+#define SCREEN_FPS 60
 
 #define MAP_WIDTH 24
 #define MAP_HEIGHT 24
