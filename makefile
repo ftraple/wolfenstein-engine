@@ -1,6 +1,6 @@
 
 CC = gcc
-CFLAGS = -std=gnu99 -Wall -Werror -Wextra -shared -fPIC
+CFLAGS = -std=gnu99 -Wall -Wextra -shared -fPIC
 LDFLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf -lm
 INCLUDE_DIR = include/
 BINARY_DIR = bin/
@@ -29,7 +29,7 @@ directory:
 	mkdir -p $(BINARY_DIR) $(BUILD_DIR)
 
 
-TEST_CFLAGS = -std=gnu99 -Wall -Werror -Wextra -shared -fPIC
+TEST_CFLAGS = -std=gnu99 -Wall -Wextra -shared -fPIC
 TEST_LDFLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf -lm -l$(TARGET)
 TEST_DIR = test/
 TEST_BUILD_DIR = build/test/

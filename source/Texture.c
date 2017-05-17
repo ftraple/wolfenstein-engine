@@ -1,26 +1,21 @@
-/*
- * Texture.c
- *
- *  Created on: 3 de fev de 2017
- *      Author: fabiano
- */
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 
 #include "Defs.h"
 #include "Texture.h"
 
 typedef  struct {
-	bool InUse;
+	bool inUse;
 	char*filename;
 	SDL_Surface*textureSurface;
-} TextureContext;
+} Texture;
 
-TextureContext*pvTextureList = NULL;
+Texture*pvTextureList = NULL;
 uint16_t pvTextureListSize = 0;
-uint16_t pvTextureListInUse = 0;
+uint16_t pvTextureListinUse = 0;
 
 // Return the texture index
 uint16_t OpenTexture(const char*filename) {
@@ -30,17 +25,16 @@ uint16_t OpenTexture(const char*filename) {
 	// Allocate texture list memory if needed.
 	if (pvTextureList == NULL) {
 		pvTextureListSize = 100;
-		pvTextureList = (TextureContext*)malloc(pvTextureListSize*sizeof(TextureContext));
+		pvTextureList = (Texture*)malloc(pvTextureListSize*sizeof(Texture));
 		if (pvTextureList == NULL) {
 			printf( "Allocate memory fail!\n");
 			return 0;
 		}
-		// Solve BUG ?
-		memset(pvTextureList, 0, pvTextureListSize*sizeof(TextureContext));
+		memset(pvTextureList, 0, pvTextureListSize*sizeof(Texture));
 	}
-	else if (pvTextureListInUse == pvTextureListSize) {
+	else if (pvTextureListinUse == pvTextureListSize) {
 		pvTextureListSize += 100;
-		TextureContext*textureListTemp = (TextureContext*)realloc( pvTextureList,pvTextureListSize*sizeof(TextureContext));
+		Texture*textureListTemp = (Texture*)realloc(pvTextureList,pvTextureListSize*sizeof(Texture));
 		if (textureListTemp == NULL) {
 			printf( "Allocate memory fail!\n");
 			return 0;
@@ -49,7 +43,7 @@ uint16_t OpenTexture(const char*filename) {
 	}
 
 	// Find empty structure in the list.
-	while (pvTextureList[index].InUse == TRUE) {
+	while (pvTextureList[index].inUse == true) {
 		index++;
 	}
 
@@ -71,8 +65,8 @@ uint16_t OpenTexture(const char*filename) {
 		return -1;
 	}
 	pvTextureList[index].filename = strdup(filename);
-	pvTextureList[index].InUse = TRUE;
-	pvTextureListInUse++;
+	pvTextureList[index].inUse = true;
+	pvTextureListinUse++;
 
 	return index;
 }
@@ -84,7 +78,7 @@ SDL_Surface*GetTextureSurface(uint16_t index) {
 		printf( "Index number is too big! [%d].\n", index);
 		return NULL;
 	}
-    if (pvTextureList[index].InUse == FALSE) {
+    if (pvTextureList[index].inUse == false) {
 		printf( "The index number [%d] is not in use.\n", index);
 		return NULL;
     }
@@ -99,14 +93,14 @@ void CloseTexture(uint16_t index) {
 		printf( "Index number is too big! [%d].\n", index);
 		return;
 	}
-    if (pvTextureList[index].InUse == FALSE) {
+    if (pvTextureList[index].inUse == false) {
 		printf( "The index number [%d] is not in use.\n", index);
 		return;
     }
 
 	SDL_FreeSurface(pvTextureList[index].textureSurface);
-	pvTextureList[index].InUse = FALSE;
-	pvTextureListInUse--;
+	pvTextureList[index].inUse = false;
+	pvTextureListinUse--;
 
 }
 

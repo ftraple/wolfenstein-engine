@@ -8,20 +8,18 @@
 #ifndef DEFS_H_
 #define DEFS_H_
 
+#include <stdint.h>
+
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
 #define SCREEN_FPS 60
 
-#define MAP_WIDTH 24
-#define MAP_HEIGHT 24
-#define MAP_BLOCK_SIZE 20
+typedef struct {
+	uint8_t r;
+	uint8_t g;
+	uint8_t b;
+	uint8_t a;
+} color;
 
-#define TEXTURE_WIDTH 64
-#define TEXTURE_HEIGHT 64
-
-typedef enum {
-	FALSE,
-	TRUE
-} bool;
 
 #endif /* DEFS_H_ */

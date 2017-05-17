@@ -12,7 +12,7 @@
 #include "Map.h"
 #include "Texture.h"
 
-struct MapContext {
+struct Map {
 	char*filename;
 	uint16_t width;
 	uint16_t height;
@@ -49,28 +49,28 @@ uint16_t worldMapTemp[24][24]=
 	{2,2,2,2,1,2,2,2,2,2,2,1,2,2,2,5,5,5,5,5,5,5,5,5}
 };
 
-MapContext*OpenMap(const char*filename) {
 
-	MapContext*mapContext = (MapContext*)malloc(sizeof(MapContext));
-	if (mapContext == NULL) {
+Map*OpenMap(const char*filename) {
+
+	Map*map = (Map*)malloc(sizeof(Map));
+	if (map == NULL) {
 		return NULL;
 	}
-	mapContext->filename = strdup(filename);
+	map->filename = strdup(filename);
 
 	//### HARD CODED
 
-	mapContext->width = 24;
-	mapContext->height = 24;
-	mapContext->bufferSize = mapContext->width*mapContext->height*sizeof(uint16_t);
-	mapContext->buffer = (uint16_t*)malloc(mapContext->bufferSize);
-	if (mapContext == NULL) {
-		free(mapContext->filename);
-		free(mapContext);
+	map->width = 24;
+	map->height = 24;
+	map->bufferSize = map->width*map->height*sizeof(uint16_t);
+	map->buffer = (uint16_t*)malloc(map->bufferSize);
+	if (map == NULL) {
+		free(map->filename);
+		free(map);
 		return NULL;
 	}
-	memcpy(mapContext->buffer, worldMapTemp, mapContext->bufferSize);
+	memcpy(map->buffer, worldMapTemp, map->bufferSize);
     // Load textures
-	OpenTexture("resource/image/barrel.png");
 	OpenTexture("resource/image/eagle.png");
 	OpenTexture("resource/image/redbrick.png");
 	OpenTexture("resource/image/purplestone.png");
@@ -80,30 +80,30 @@ MapContext*OpenMap(const char*filename) {
 	OpenTexture("resource/image/wood.png");
 	OpenTexture("resource/image/colorstone.png");
 
+	OpenTexture("resource/image/barrel.png");
+	OpenTexture("resource/image/pillar.png");
+	OpenTexture("resource/image/greenlight.png");
+
 	//###
 
-	return mapContext;
+	return map;
 }
 
-uint16_t GetMapWidth(MapContext*mapContext) {
-	return mapContext->width;
+uint16_t GetMapWidth(Map*map) {
+	return map->width;
 }
 
-uint16_t GetMapHeight(MapContext*mapContext) {
-	return mapContext->height;
+uint16_t GetMapHeight(Map*map) {
+	return map->height;
 }
 
-uint16_t GetMapValue(MapContext*mapContext, uint16_t x, uint16_t y) {
-	uint16_t*value = mapContext->buffer+(x*mapContext->width)+y;
+uint16_t GetMapValue(Map*map, uint16_t x, uint16_t y) {
+	uint16_t*value = map->buffer+(x*map->width)+y;
 	return *value;
 }
 
-void CloseMap(MapContext*mapContext) {
-	free(mapContext->filename);
-	free(mapContext->buffer);
-	free(mapContext);
+void CloseMap(Map*map) {
+	free(map->filename);
+	free(map->buffer);
+	free(map);
 }
-
-
-
-

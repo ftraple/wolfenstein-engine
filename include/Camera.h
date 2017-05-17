@@ -10,24 +10,27 @@
 
 #include "Map.h"
 
-void CreateCamera(unsigned int width, unsigned int height, MapContext*mapContext);
+typedef struct Camera Camera;
 
-void RotateCameraLeft();
+Camera*CreateCamera(unsigned int width, unsigned int height);
 
-void RotateCameraRight();
+void DestroyCamera(Camera*camera);
 
-void MoveCameraForward();
+void SetCameraMap(Camera*camera, Map*map);
 
-void MoveCameraBackward();
+void RotateCamera(Camera*camera, int32_t stepX);
 
-void MoveCameraLeft();
+void MoveCameraForward(Camera*camera);
 
-void MoveCameraRight();
+void MoveCameraBackward(Camera*camera);
 
-void RenderCamera();
+void MoveCameraLeft(Camera*camera);
 
-const void*GetCameraBuffer();
+void MoveCameraRight(Camera*camera);
 
-void DestroyCamera();
+void RenderCamera(Camera*camera);
+
+const void*GetCameraBuffer(Camera*camera);
+
 
 #endif /* CAMERA_H_ */
