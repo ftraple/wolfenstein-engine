@@ -1,33 +1,22 @@
-/*
- * Map.h
- *
- *  Created on: 3 de fev de 2017
- *      Author: fabiano
- */
-
 #ifndef INCLUDE_MAP_H_
 #define INCLUDE_MAP_H_
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
+#include <assert.h>
 
-#include "Sprite.h"
+typedef struct w3d_MapSt w3d_Map;
 
-struct Map;
-typedef struct Map Map;
+w3d_Map* w3d_CreateMapFromRaw(int width, int height, uint8_t* data);
 
-Map*OpenMap(const char*filename);
+void w3d_CloseMap(w3d_Map* map);
 
-void CloseMap(Map*map);
+int w3d_GetMapWidth(w3d_Map* map);
 
-uint16_t GetMapWidth(Map*map);
+int w3d_GetMapHeight(w3d_Map* map);
 
-uint16_t GetMapHeight(Map*map);
-
-uint16_t GetMapValue(Map*map, uint16_t x, uint16_t y);
-
-void Map_AddSprite(Sprite*sprite);
-
-void Map_RemoveSprite(Sprite*sprite);
-
+uint8_t w3d_GetMapValue(w3d_Map* map, int x, int y);
 
 #endif /* INCLUDE_MAP_H_ */

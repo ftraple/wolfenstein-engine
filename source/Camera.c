@@ -39,7 +39,7 @@ struct Camera {
 	float moveSpeed;
 	float rotationSpeed;
 	float wallDistance;
-	Map*map;
+	w3d_Map* map;
 	uint32_t*viewBuffer;
 	size_t viewBufferSize;
 
@@ -139,8 +139,8 @@ Camera*CreateCamera(unsigned int width, unsigned int height) {
 	}
 
 	// Set default values to the camera context
-	camera->positionX = 22;
-	camera->positionY = 11.5;
+	camera->positionX = 5;
+	camera->positionY = 5;
 	camera->directionX = -1;
 	camera->directionY = 0;
 	camera->planeX = 0;
@@ -182,7 +182,7 @@ void DestroyCamera(Camera*camera) {
 	free(camera);
 }
 
-void SetCameraMap(Camera*camera, Map*map) {
+void SetCameraMap(Camera*camera, w3d_Map* map) {
 	camera->map = map;
 }
 
@@ -262,7 +262,7 @@ void RenderCamera(Camera*camera) {
 				frameData->side = 1;
 			}
 			//Check if ray has hit a wall
-			if (GetMapValue(camera->map, frameData->mapX, frameData->mapY) > 0) {
+			if (w3d_GetMapValue(camera->map, frameData->mapX, frameData->mapY) > 0) {
 				hitWall = true;
 			}
 		}
@@ -276,7 +276,7 @@ void RenderCamera(Camera*camera) {
 		}
 
 		// Get texture surface
-		textureIndex = GetMapValue(camera->map, frameData->mapX, frameData->mapY)-1;
+		textureIndex = w3d_GetMapValue(camera->map, frameData->mapX, frameData->mapY)-1;
 		SDL_Surface*textureSurface = GetTextureSurface(textureIndex);
 		if (textureSurface == NULL) {
 			printf("textureSurface NULL!\n");
@@ -492,19 +492,19 @@ void RotateCamera(Camera*camera, int32_t stepX) {
 }
 
 void MoveCameraForward(Camera*camera) {
-	if(GetMapValue(camera->map, (int)(camera->positionX+camera->directionX*(camera->moveSpeed+camera->wallDistance)), (int)camera->positionY) == 0) {
+	if(w3d_GetMapValue(camera->map, (int)(camera->positionX+camera->directionX*(camera->moveSpeed+camera->wallDistance)), (int)camera->positionY) == 0) {
 		camera->positionX += camera->directionX*camera->moveSpeed;
 	}
-	if(GetMapValue(camera->map, (int)camera->positionX, (int)(camera->positionY+camera->directionY*(camera->moveSpeed+camera->wallDistance))) == 0) {
+	if(w3d_GetMapValue(camera->map, (int)camera->positionX, (int)(camera->positionY+camera->directionY*(camera->moveSpeed+camera->wallDistance))) == 0) {
 		camera->positionY += camera->directionY*camera->moveSpeed;
 	}
 }
 
 void MoveCameraBackward(Camera*camera) {
-	if(GetMapValue(camera->map, (int)(camera->positionX-camera->directionX*(camera->moveSpeed+camera->wallDistance)), (int)camera->positionY) == 0) {
+	if(w3d_GetMapValue(camera->map, (int)(camera->positionX-camera->directionX*(camera->moveSpeed+camera->wallDistance)), (int)camera->positionY) == 0) {
 		camera->positionX -= camera->directionX*camera->moveSpeed;
 	}
-	if(GetMapValue(camera->map, (int)camera->positionX, (int)(camera->positionY-camera->directionY*(camera->moveSpeed+camera->wallDistance))) == 0) {
+	if(w3d_GetMapValue(camera->map, (int)camera->positionX, (int)(camera->positionY-camera->directionY*(camera->moveSpeed+camera->wallDistance))) == 0) {
 		camera->positionY -= camera->directionY*camera->moveSpeed;
 	}
 }
@@ -514,10 +514,10 @@ void MoveCameraLeft(Camera*camera) {
 	float directionX = camera->directionX * cos(rotation) - camera->directionY * sin(rotation);
 	float directionY = camera->directionX * sin(rotation) + camera->directionY * cos(rotation);
 
-	if(GetMapValue(camera->map, (int)(camera->positionX-directionX*(camera->moveSpeed+camera->wallDistance)), (int)camera->positionY) == 0) {
+	if(w3d_GetMapValue(camera->map, (int)(camera->positionX-directionX*(camera->moveSpeed+camera->wallDistance)), (int)camera->positionY) == 0) {
 		camera->positionX -= directionX*camera->moveSpeed;
 	}
-	if(GetMapValue(camera->map, (int)camera->positionX, (int)(camera->positionY-directionY*(camera->moveSpeed+camera->wallDistance))) == 0) {
+	if(w3d_GetMapValue(camera->map, (int)camera->positionX, (int)(camera->positionY-directionY*(camera->moveSpeed+camera->wallDistance))) == 0) {
 		camera->positionY -= directionY*camera->moveSpeed;
 	}
 }
@@ -527,10 +527,10 @@ void MoveCameraRight(Camera*camera) {
 	float directionX = camera->directionX * cos(rotation) - camera->directionY * sin(rotation);
 	float directionY = camera->directionX * sin(rotation) + camera->directionY * cos(rotation);
 
-	if(GetMapValue(camera->map, (int)(camera->positionX+directionX*(camera->moveSpeed+camera->wallDistance)), (int)camera->positionY) == 0) {
+	if(w3d_GetMapValue(camera->map, (int)(camera->positionX+directionX*(camera->moveSpeed+camera->wallDistance)), (int)camera->positionY) == 0) {
 		camera->positionX += directionX*camera->moveSpeed;
 	}
-	if(GetMapValue(camera->map, (int)camera->positionX, (int)(camera->positionY+directionY*(camera->moveSpeed+camera->wallDistance))) == 0) {
+	if(w3d_GetMapValue(camera->map, (int)camera->positionX, (int)(camera->positionY+directionY*(camera->moveSpeed+camera->wallDistance))) == 0) {
 		camera->positionY += directionY*camera->moveSpeed;
 	}
 }

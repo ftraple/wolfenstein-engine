@@ -16,7 +16,7 @@ Camera*CreateCamera(unsigned int width, unsigned int height);
 
 void DestroyCamera(Camera*camera);
 
-void SetCameraMap(Camera*camera, Map*map);
+void SetCameraMap(Camera*camera, w3d_Map* map);
 
 void RotateCamera(Camera*camera, int32_t stepX);
 

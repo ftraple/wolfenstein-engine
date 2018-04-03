@@ -10,8 +10,8 @@
 
 #include <stdint.h>
 
-#define SCREEN_WIDTH 640
-#define SCREEN_HEIGHT 480
+#define SCREEN_WIDTH 800
+#define SCREEN_HEIGHT 600
 #define SCREEN_FPS 60
 
 typedef struct {

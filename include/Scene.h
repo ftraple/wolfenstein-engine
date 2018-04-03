@@ -7,7 +7,7 @@
 
 typedef struct Scene Scene;
 
-Scene*Scene_Create(Map*map);
+Scene*Scene_Create(w3d_Map* map);
 
 void Scene_Destroy(Scene*scene);
 
