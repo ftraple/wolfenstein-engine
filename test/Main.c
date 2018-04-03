@@ -1,15 +1,6 @@
-/*
- ============================================================================
- Name        : MyDukeNukem.c
- Author      : Fabiano Traple
- Version     :
- Copyright   : Blah!
- Description : Hello World in C, Ansi-style
- ============================================================================
- */
-
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <stdbool.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
@@ -19,12 +10,27 @@
 #include "Map.h"
 #include "Camera.h"
 #include "Scene.h"
+#include "Texture.h"
 
 
 bool keyUpPressed = false;
 bool keyDownPressed = false;
 bool keyLeftPressed = false;
 bool keyRightPressed = false;
+
+
+uint8_t rawMap[10][10] = {
+	{1,1,1,1,1,1,1,1,1,1},
+	{1,0,0,0,0,0,0,0,0,1},
+	{1,0,0,0,0,0,0,0,0,1},
+	{1,0,0,0,0,0,0,0,0,1},
+	{1,0,0,0,0,0,0,0,0,1},
+	{1,0,0,0,0,0,0,0,0,1},
+	{1,0,0,0,0,0,0,0,0,1},
+	{1,0,0,0,0,0,0,0,0,1},
+	{1,0,0,0,0,0,0,0,0,1},
+	{1,1,1,1,1,1,1,1,1,1},
+};
 
 void DrawTexture(SDL_Renderer*renderer,
 			     TTF_Font*font,
@@ -150,19 +156,33 @@ int main(void) {
 
 	// Setup renderer
 	SDL_Renderer*renderer = NULL;
-	renderer = SDL_CreateRenderer( window, -1, SDL_RENDERER_ACCELERATED);
+	renderer = SDL_CreateRenderer( window, -1, SDL_RENDERER_SOFTWARE);
 
 	// Open map
-	Map*level1 = OpenMap("resource/map/level_01.map");
+	w3d_Map* mapLevel1 = w3d_CreateMapFromRaw(10, 10, (uint8_t*)&rawMap);
+
+    // Load textures
+	OpenTexture("resource/image/redbrick.png");
+	OpenTexture("resource/image/eagle.png");
+	OpenTexture("resource/image/purplestone.png");
+	OpenTexture("resource/image/greystone.png");
+	OpenTexture("resource/image/bluestone.png");
+	OpenTexture("resource/image/mossy.png");
+	OpenTexture("resource/image/wood.png");
+	OpenTexture("resource/image/colorstone.png");
+
+	OpenTexture("resource/image/barrel.png");
+	OpenTexture("resource/image/pillar.png");
+	OpenTexture("resource/image/greenlight.png");
 
 	// Create a texture
-	SDL_Texture*cameraTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, SCREEN_WIDTH, SCREEN_HEIGHT);
+	SDL_Texture*cameraTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	// Create a new camera
 	Camera*camera1 = CreateCamera(SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	// Create a scene
-	Scene*scene1 = Scene_Create(level1);
+	Scene*scene1 = Scene_Create(mapLevel1);
 	Scene_AddCamera(scene1, camera1);
 
 	TTF_Font*font = TTF_OpenFont("resource/font/FreeSansBold.ttf", 32);
@@ -182,15 +202,17 @@ int main(void) {
 //	SDL_Delay(5000);
 
 	char frameRateText[20];
-	SDL_Color color = { 255, 255, 255 };
+	SDL_Color color = {255, 255, 255, 255};
 
 	while(Move(window, camera1)) {
+
+		SDL_RenderClear(renderer);
 
 		Scene_Render(scene1);
 		SDL_UpdateTexture(cameraTexture, NULL, GetCameraBuffer(camera1), SCREEN_WIDTH*sizeof(Uint32));
 		SDL_RenderCopy(renderer, cameraTexture, NULL, NULL);
 
-		snprintf(frameRateText, sizeof(frameRateText), "Frame rate = %d", frameRate);
+		snprintf(frameRateText, sizeof(frameRateText), "%d", frameRate);
 		DrawTexture(renderer, font, 10, 10,frameRateText, &color);
 
 		SDL_RenderPresent(renderer);
@@ -207,7 +229,7 @@ int main(void) {
 
 	DestroyCamera(camera1);
 	SDL_DestroyTexture(cameraTexture);
-	CloseMap(level1);
+	w3d_CloseMap(mapLevel1);
 
 	TTF_CloseFont(font);
 	SDL_DestroyTexture(cameraTexture);

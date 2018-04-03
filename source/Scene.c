@@ -19,14 +19,14 @@ struct SpriteElement {
 
 struct Scene {
 	char*name;
-	Map*map;
+	w3d_Map* map;
 	size_t cameraListSize;
 	CameraElement*cameraList;
 	size_t spriteListSize;
 	SpriteElement*spriteList;
 };
 
-Scene*Scene_Create(Map*map) {
+Scene*Scene_Create(w3d_Map* map) {
 
 	Scene*scene = (Scene*)malloc(sizeof(Scene));
 	if (scene == NULL) {

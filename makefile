@@ -34,7 +34,7 @@ TEST_BUILD_DIR = build/test/
 
 test: $(TARGET)
 	mkdir -p $(TEST_BUILD_DIR)
-	$(CC) -I $(INCLUDE_DIR) -c $(TEST_DIR)Main.c -o $(TEST_BUILD_DIR)Main.o
+	$(CC) $(TEST_CFLAGS) -I $(INCLUDE_DIR) -c $(TEST_DIR)Main.c -o $(TEST_BUILD_DIR)Main.o
 	$(CC) $(TEST_BUILD_DIR)Main.o -Wl,-rpath=$(shell pwd)/$(BINARY_DIR) -L$(BINARY_DIR) $(TEST_LDFLAGS) -o $(BINARY_DIR)Test 
 
 clean:
