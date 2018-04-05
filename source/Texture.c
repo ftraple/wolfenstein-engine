@@ -56,7 +56,7 @@ uint16_t OpenTexture(const char*filename) {
 		return -1;
 	}
 	//Convert surface to screen format
-	pvTextureList[index].textureSurface = SDL_ConvertSurfaceFormat(textureSurfaceTemp, SDL_PIXELFORMAT_RGBA8888, 0);
+	pvTextureList[index].textureSurface = SDL_ConvertSurfaceFormat(textureSurfaceTemp, SDL_PIXELFORMAT_ARGB8888, 0);
 	// Delete temporary loaded surface.
 	SDL_FreeSurface(textureSurfaceTemp);
 	// Check if texture surface was converted.

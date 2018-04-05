@@ -9,7 +9,6 @@
 #include "Defs.h"
 #include "Map.h"
 #include "Camera.h"
-#include "Scene.h"
 #include "Texture.h"
 
 
@@ -51,7 +50,7 @@ void DrawTexture(SDL_Renderer*renderer,
 	SDL_FreeSurface(surface);
 }
 
-bool Move(SDL_Window*window, Camera*camera) {
+bool Move(SDL_Window*window, w3d_Camera* camera) {
 
 	SDL_Event event;
 
@@ -100,23 +99,23 @@ bool Move(SDL_Window*window, Camera*camera) {
 
 		// Run multiple times per frame.
 		if (event.type == SDL_MOUSEMOTION) {
-			RotateCamera(camera, (SCREEN_WIDTH/2)-event.motion.x);
+			w3d_RotateCamera(camera, (SCREEN_WIDTH/2)-event.motion.x);
 			SDL_WarpMouseInWindow(window, SCREEN_WIDTH/2, SCREEN_HEIGHT/2);
 		}
 	}
 
 	// Run just one time per frame.
 	if (keyUpPressed == true) {
-		MoveCameraForward(camera);
+		w3d_MoveCameraForward(camera);
 	}
 	else if (keyDownPressed == true) {
-		MoveCameraBackward(camera);
+		w3d_MoveCameraBackward(camera);
 	}
 	if (keyLeftPressed == true) {
-		MoveCameraLeft(camera);
+		w3d_MoveCameraLeft(camera);
 	}
 	else if (keyRightPressed == true) {
-		MoveCameraRight(camera);
+		w3d_MoveCameraRight(camera);
 	}
 
 	return true;
@@ -176,19 +175,13 @@ int main(void) {
 	OpenTexture("resource/image/greenlight.png");
 
 	// Create a texture
-	SDL_Texture*cameraTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH, SCREEN_HEIGHT);
+	SDL_Texture* cameraTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH, SCREEN_HEIGHT);
 
 	// Create a new camera
-	Camera*camera1 = CreateCamera(SCREEN_WIDTH, SCREEN_HEIGHT);
-
-	// Create a scene
-	Scene*scene1 = Scene_Create(mapLevel1);
-	Scene_AddCamera(scene1, camera1);
+	w3d_Camera* camera = w3d_CreateCamera(SCREEN_WIDTH, SCREEN_HEIGHT);
+	w3d_SetCameraMap(camera, mapLevel1);
 
 	TTF_Font*font = TTF_OpenFont("resource/font/FreeSansBold.ttf", 32);
-
-
-	Scene_Render(scene1);
 
 	float time;
 	float lastTime = SDL_GetTicks();
@@ -204,12 +197,16 @@ int main(void) {
 	char frameRateText[20];
 	SDL_Color color = {255, 255, 255, 255};
 
-	while(Move(window, camera1)) {
+	void* mPixels = NULL;
+	int mPitch;
+
+	while(Move(window, camera)) {
 
 		SDL_RenderClear(renderer);
 
-		Scene_Render(scene1);
-		SDL_UpdateTexture(cameraTexture, NULL, GetCameraBuffer(camera1), SCREEN_WIDTH*sizeof(Uint32));
+        SDL_LockTexture(cameraTexture, NULL, &mPixels, &mPitch);
+		w3d_RenderCamera(camera, mPixels);
+		SDL_UnlockTexture(cameraTexture);
 		SDL_RenderCopy(renderer, cameraTexture, NULL, NULL);
 
 		snprintf(frameRateText, sizeof(frameRateText), "%d", frameRate);
@@ -227,7 +224,7 @@ int main(void) {
 		}
 	}
 
-	DestroyCamera(camera1);
+	w3d_DestroyCamera(camera);
 	SDL_DestroyTexture(cameraTexture);
 	w3d_CloseMap(mapLevel1);
 

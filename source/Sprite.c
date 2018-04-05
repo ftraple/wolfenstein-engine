@@ -37,7 +37,7 @@ struct Sprite {
 	uint16_t directionAngle;
 	bool visible;
 
-	color invisibleColor;
+	w3d_ColorARGB invisibleColor;
 
 	bool colideActive;
 	uint16_t colideRadius;

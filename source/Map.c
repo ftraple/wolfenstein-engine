@@ -1,4 +1,5 @@
 
+#include "Defs.h"
 #include "Map.h"
 
 struct w3d_MapSt {
@@ -6,6 +7,8 @@ struct w3d_MapSt {
 	int height;
 	uint8_t* data;
 	size_t dataSize;
+	w3d_ColorARGB floorColor;
+	w3d_ColorARGB ceilingColor;
 };
 
 /*################################################################################*/
