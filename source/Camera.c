@@ -1,8 +1,4 @@
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <math.h>
 
 #include "Defs.h"
 #include "Utils.h"
@@ -25,7 +21,7 @@ typedef struct FrameData {
 	float rayDirectionY;
 } FrameData;
 
-struct Camera {
+struct w3d_CameraSt {
 	float positionX;
 	float positionY;
 	float directionX;
@@ -47,98 +43,54 @@ struct Camera {
 };
 
 
-//#define NUM_SPRITES 19
-//#define TEXT_WIDTH 64
-//#define TEXT_HEIGHT 64
-
-//typedef struct
-//{
-//  float x;
-//  float y;
-//  int texture;
-//} Sprite;
-//
-//Sprite sprite[NUM_SPRITES] =
-//{
-//  {20.5, 11.5, 10}, //green light in front of player start
-//  //green lights in every room
-//  {18.5,4.5, 10},
-//  {10.0,4.5, 10},
-//  {10.0,12.5,10},
-//  {3.5, 6.5, 10},
-//  {3.5, 20.5,10},
-//  {3.5, 14.5,10},
-//  {14.5,20.5,10},
-//
-//  //row of pillars in front of wall: fisheye test
-//  {18.5, 10.5, 9},
-//  {18.5, 11.5, 9},
-//  {18.5, 12.5, 9},
-//
-//  //some barrels around the map
-//  {21.5, 1.5, 8},
-//  {15.5, 1.5, 8},
-//  {16.0, 1.8, 8},
-//  {16.2, 1.2, 8},
-//  {3.5,  2.5, 8},
-//  {9.5, 15.5, 8},
-//  {10.0, 15.1,8},
-//  {10.5, 15.8,8},
-//};
-
 // ### HARD CODE
-float ZBuffer[640];
-int spriteOrder[100];
-float spriteDistance[100];
-
-
+// float ZBuffer[640];
+// int spriteOrder[100];
+// float spriteDistance[100];
 
 void FloorRender();
 //void SpriteRender();
 
-//sort algorithm
-void combSort(int*order, float*dist, int amount)
-{
-	int gap = amount;
-	bool swapped = false;
-	while (gap > 1 || swapped) {
-		//shrink factor 1.3
-		gap = (gap * 10) / 13;
-		if (gap == 9 || gap == 10) {
-			gap = 11;
-		}
-		if (gap < 1) {
-			gap = 1;
-		}
-		swapped = false;
-		for (int i = 0; i < amount - gap; i++) {
-			int j = i + gap;
-			if (dist[i] < dist[j]) {
-				// Swap distance
-				float distTmp = dist[j];
-				dist[j] = dist[i];
-				dist[i] = distTmp;
-				// Swap order
-				int orderTmp = order[j];
-				order[j] = order[i];
-				order[i] = orderTmp;
-				swapped = true;
-			}
-		}
-	}
-}
+// /*################################################################################*/
+// void combSort(int*order, float*dist, int amount)
+// {
+// 	int gap = amount;
+// 	bool swapped = false;
+// 	while (gap > 1 || swapped) {
+// 		//shrink factor 1.3
+// 		gap = (gap * 10) / 13;
+// 		if (gap == 9 || gap == 10) {
+// 			gap = 11;
+// 		}
+// 		if (gap < 1) {
+// 			gap = 1;
+// 		}
+// 		swapped = false;
+// 		for (int i = 0; i < amount - gap; i++) {
+// 			int j = i + gap;
+// 			if (dist[i] < dist[j]) {
+// 				// Swap distance
+// 				float distTmp = dist[j];
+// 				dist[j] = dist[i];
+// 				dist[i] = distTmp;
+// 				// Swap order
+// 				int orderTmp = order[j];
+// 				order[j] = order[i];
+// 				order[i] = orderTmp;
+// 				swapped = true;
+// 			}
+// 		}
+// 	}
+// }
 
+/*################################################################################*/
+w3d_Camera* w3d_CreateCamera(int width, int height) {
 
-Camera*CreateCamera(unsigned int width, unsigned int height) {
-
-	// Allocate camera context
-	Camera*camera = (Camera*)malloc(sizeof(Camera));
+	w3d_Camera* camera = (w3d_Camera*)malloc(sizeof(w3d_Camera));
 	if (camera == NULL) {
 		printf("Allocate camera context memory fail!\n");
 		return NULL;
 	}
-
-	// Set default values to the camera context
 	camera->positionX = 5;
 	camera->positionY = 5;
 	camera->directionX = -1;
@@ -152,46 +104,38 @@ Camera*CreateCamera(unsigned int width, unsigned int height) {
 	camera->moveSpeed = camera->walkSpeed;
 	camera->rotationSpeed = 0.001;
 	camera->wallDistance = 0.3;
-
-	// Allocate camera view buffer
 	camera->viewBufferSize = width*height*sizeof(uint32_t);
-	camera->viewBuffer = (uint32_t*)malloc(camera->viewBufferSize);
-	if (camera->viewBuffer == NULL) {
-		printf("Allocate camera view buffer fail!\n");
-		return NULL;
-	}
-	memset(camera->viewBuffer, 0, camera->viewBufferSize);
-
+	camera->map = NULL;
+	camera->viewBuffer = NULL;
 	camera->frameData = (FrameData*)malloc(camera->width*sizeof(FrameData));
 	if (camera->frameData == NULL) {
 		printf("Allocate camera frame data buffer fail!\n");
+		free(camera);
 		return NULL;
 	}
 
 	return camera;
 }
 
-void DestroyCamera(Camera*camera) {
-
-	if (camera == NULL) {
-		printf("No active camera context.\n");
-		return;
-	}
+/*################################################################################*/
+void w3d_DestroyCamera(w3d_Camera* camera) {
+	assert(camera != NULL);
 	free(camera->frameData);
-	free(camera->viewBuffer);
 	free(camera);
 }
 
-void SetCameraMap(Camera*camera, w3d_Map* map) {
+/*################################################################################*/
+void w3d_SetCameraMap(w3d_Camera* camera, w3d_Map* map) {
 	camera->map = map;
 }
 
-
-void RenderCamera(Camera*camera) {
+/*################################################################################*/
+void w3d_RenderCamera(w3d_Camera* camera, void* viewBuffer) {
 
 	if (camera->map == NULL) {
 		return;
 	}
+	camera->viewBuffer = (uint32_t*)viewBuffer;
 	memset(camera->viewBuffer, 128, camera->viewBufferSize);
 
 	float cameraX;
@@ -208,7 +152,7 @@ void RenderCamera(Camera*camera) {
 
 	uint32_t texturePositionX;
 	uint32_t texturePositionY;
-	uint32_t*texturePixel;
+	uint32_t* texturePixel;
 	uint16_t textureIndex;
 
 	FrameData*frameData = camera->frameData;
@@ -328,7 +272,7 @@ void RenderCamera(Camera*camera) {
 		}
 
 		//SET THE ZBUFFER FOR THE SPRITE CASTING
-        ZBuffer[x] = frameData->perpWallDist; //perpendicular distance is used
+        //ZBuffer[x] = frameData->perpWallDist; //perpendicular distance is used
 
         frameData++;
 	}
@@ -338,7 +282,8 @@ void RenderCamera(Camera*camera) {
 }
 
 
-void FloorRender(Camera*camera) {
+/*################################################################################*/
+void FloorRender(w3d_Camera* camera) {
 
 	SDL_Surface*FloorSurface = GetTextureSurface(3);
 	SDL_Surface*CeilingSurface = GetTextureSurface(6);
@@ -476,11 +421,9 @@ void FloorRender(Camera*camera) {
 //	}
 //}
 
-const void*GetCameraBuffer(Camera*camera) {
-	return camera->viewBuffer;
-}
 
-void RotateCamera(Camera*camera, int32_t stepX) {
+/*################################################################################*/
+void w3d_RotateCamera(w3d_Camera* camera, int32_t stepX) {
 	float rotSpeed = (float)stepX*camera->rotationSpeed;
 	float oldDirX = camera->directionX;
 	float oldPlaneX = camera->planeX;
@@ -491,7 +434,8 @@ void RotateCamera(Camera*camera, int32_t stepX) {
 	camera->planeY = oldPlaneX * sin(rotSpeed) + camera->planeY * cos(rotSpeed);
 }
 
-void MoveCameraForward(Camera*camera) {
+/*################################################################################*/
+void w3d_MoveCameraForward(w3d_Camera* camera) {
 	if(w3d_GetMapValue(camera->map, (int)(camera->positionX+camera->directionX*(camera->moveSpeed+camera->wallDistance)), (int)camera->positionY) == 0) {
 		camera->positionX += camera->directionX*camera->moveSpeed;
 	}
@@ -500,7 +444,8 @@ void MoveCameraForward(Camera*camera) {
 	}
 }
 
-void MoveCameraBackward(Camera*camera) {
+/*################################################################################*/
+void w3d_MoveCameraBackward(w3d_Camera* camera) {
 	if(w3d_GetMapValue(camera->map, (int)(camera->positionX-camera->directionX*(camera->moveSpeed+camera->wallDistance)), (int)camera->positionY) == 0) {
 		camera->positionX -= camera->directionX*camera->moveSpeed;
 	}
@@ -509,7 +454,8 @@ void MoveCameraBackward(Camera*camera) {
 	}
 }
 
-void MoveCameraLeft(Camera*camera) {
+/*################################################################################*/
+void w3d_MoveCameraLeft(w3d_Camera* camera) {
 	float rotation = 80.0;
 	float directionX = camera->directionX * cos(rotation) - camera->directionY * sin(rotation);
 	float directionY = camera->directionX * sin(rotation) + camera->directionY * cos(rotation);
@@ -522,7 +468,8 @@ void MoveCameraLeft(Camera*camera) {
 	}
 }
 
-void MoveCameraRight(Camera*camera) {
+/*################################################################################*/
+void w3d_MoveCameraRight(w3d_Camera* camera) {
 	double rotation = 80.0;
 	float directionX = camera->directionX * cos(rotation) - camera->directionY * sin(rotation);
 	float directionY = camera->directionX * sin(rotation) + camera->directionY * cos(rotation);
@@ -534,5 +481,3 @@ void MoveCameraRight(Camera*camera) {
 		camera->positionY += directionY*camera->moveSpeed;
 	}
 }
-
-

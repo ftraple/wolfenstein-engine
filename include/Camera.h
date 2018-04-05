@@ -8,29 +8,33 @@
 #ifndef CAMERA_H_
 #define CAMERA_H_
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <math.h>
+#include <assert.h>
+
 #include "Map.h"
 
-typedef struct Camera Camera;
+typedef struct w3d_CameraSt w3d_Camera;
 
-Camera*CreateCamera(unsigned int width, unsigned int height);
+w3d_Camera* w3d_CreateCamera(int width, int height);
 
-void DestroyCamera(Camera*camera);
+void w3d_DestroyCamera(w3d_Camera* camera);
 
-void SetCameraMap(Camera*camera, w3d_Map* map);
+void w3d_SetCameraMap(w3d_Camera* camera, w3d_Map* map);
 
-void RotateCamera(Camera*camera, int32_t stepX);
+void w3d_RotateCamera(w3d_Camera* camera, int32_t stepX);
 
-void MoveCameraForward(Camera*camera);
+void w3d_MoveCameraForward(w3d_Camera* camera);
 
-void MoveCameraBackward(Camera*camera);
+void w3d_MoveCameraBackward(w3d_Camera* camera);
 
-void MoveCameraLeft(Camera*camera);
+void w3d_MoveCameraLeft(w3d_Camera* camera);
 
-void MoveCameraRight(Camera*camera);
+void w3d_MoveCameraRight(w3d_Camera* camera);
 
-void RenderCamera(Camera*camera);
-
-const void*GetCameraBuffer(Camera*camera);
+void w3d_RenderCamera(w3d_Camera* camera, void* viewBuffer);
 
 
 #endif /* CAMERA_H_ */
