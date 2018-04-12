@@ -1,5 +1,5 @@
-#ifndef DEFS_H_
-#define DEFS_H_
+#ifndef DEFS_H
+#define DEFS_H
 
 #include <stdint.h>
 
@@ -15,4 +15,4 @@ typedef struct {
 } w3d_ColorARGB;
 
 
-#endif /* DEFS_H_ */
+#endif /* DEFS_H */

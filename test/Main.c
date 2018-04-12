@@ -10,6 +10,7 @@
 #include "Map.h"
 #include "Camera.h"
 #include "Texture.h"
+#include "TextureList.h"
 
 
 bool keyUpPressed = false;
@@ -18,7 +19,7 @@ bool keyLeftPressed = false;
 bool keyRightPressed = false;
 
 
-uint8_t rawMap[10][10] = {
+uint8_t rawMapWall[10][10] = {
 	{1,1,1,1,1,1,1,1,1,1},
 	{1,0,0,0,0,0,0,0,0,1},
 	{1,0,0,0,0,0,0,0,0,1},
@@ -28,8 +29,55 @@ uint8_t rawMap[10][10] = {
 	{1,0,0,0,0,0,0,0,0,1},
 	{1,0,0,0,0,0,0,0,0,1},
 	{1,0,0,0,0,0,0,0,0,1},
-	{1,1,1,1,1,1,1,1,1,1},
+	{1,1,1,1,1,1,1,1,1,1}
 };
+
+uint8_t rawMapCeiling[10][10] = {
+	{3,3,3,3,3,3,3,3,3,3},
+	{3,3,3,3,3,3,3,3,3,3},
+	{3,3,3,3,3,3,3,3,3,3},
+	{3,3,3,6,6,6,6,3,3,3},
+	{3,3,3,6,6,6,6,3,3,3},
+	{3,3,3,6,6,6,6,3,3,3},
+	{3,3,3,6,6,6,6,3,3,3},
+	{3,3,3,3,3,3,3,3,3,3},
+	{3,3,3,3,3,3,3,3,3,3},
+	{3,3,3,3,3,3,3,3,3,3}
+};
+
+uint8_t rawMapFloor[10][10] = {
+	{3,3,3,3,3,3,3,3,3,3},
+	{3,3,3,3,3,3,3,3,3,3},
+	{3,3,7,7,7,7,7,7,3,3},
+	{3,3,7,3,3,3,3,7,3,3},
+	{3,3,7,3,3,3,3,7,3,3},
+	{3,3,7,3,3,3,3,7,3,3},
+	{3,3,7,3,3,3,3,7,3,3},
+	{3,3,7,7,7,7,7,7,3,3},
+	{3,3,3,3,3,3,3,3,3,3},
+	{3,3,3,3,3,3,3,3,3,3}
+};
+
+
+// Return the texture index
+w3d_Texture* LoadTexture(const char* textureName, const char* filename) {
+	// Load image
+	SDL_Surface* sdlTextureSurface = IMG_Load(filename);
+	if (sdlTextureSurface == NULL) {
+		printf( "Unable to load image %s! SDL_image Error: %s\n", filename, IMG_GetError() );
+		return NULL;
+	}
+	// Convert surface to screen format
+	SDL_Surface* sdlOptimazedTextureSurface = SDL_ConvertSurfaceFormat(sdlTextureSurface, SDL_PIXELFORMAT_ARGB8888, 0);
+	// Create texture
+	w3d_Texture* texture = w3d_Texture_CretateFromRaw(textureName,
+		sdlOptimazedTextureSurface->w, sdlOptimazedTextureSurface->h,
+		 (uint32_t*)sdlOptimazedTextureSurface->pixels);
+	// Release sdl textures
+	SDL_FreeSurface(sdlOptimazedTextureSurface);
+	SDL_FreeSurface(sdlTextureSurface);
+	return texture;
+}
 
 void DrawTexture(SDL_Renderer*renderer,
 			     TTF_Font*font,
@@ -157,22 +205,22 @@ int main(void) {
 	SDL_Renderer*renderer = NULL;
 	renderer = SDL_CreateRenderer( window, -1, SDL_RENDERER_SOFTWARE);
 
-	// Open map
-	w3d_Map* mapLevel1 = w3d_CreateMapFromRaw(10, 10, (uint8_t*)&rawMap);
-
     // Load textures
-	OpenTexture("resource/image/redbrick.png");
-	OpenTexture("resource/image/eagle.png");
-	OpenTexture("resource/image/purplestone.png");
-	OpenTexture("resource/image/greystone.png");
-	OpenTexture("resource/image/bluestone.png");
-	OpenTexture("resource/image/mossy.png");
-	OpenTexture("resource/image/wood.png");
-	OpenTexture("resource/image/colorstone.png");
+	w3d_TextureList* textureList = w3d_TextureList_Create(20);
+	w3d_TextureList_Pop(textureList, LoadTexture("RedBrick",    "resource/image/redbrick.png"));
+	w3d_TextureList_Pop(textureList, LoadTexture("Eagle",       "resource/image/eagle.png"));
+	w3d_TextureList_Pop(textureList, LoadTexture("PurpleStone", "resource/image/purplestone.png"));
+	w3d_TextureList_Pop(textureList, LoadTexture("GreyStone",   "resource/image/greystone.png"));
+	w3d_TextureList_Pop(textureList, LoadTexture("BlueStone",   "resource/image/bluestone.png"));
+	w3d_TextureList_Pop(textureList, LoadTexture("Mossy",       "resource/image/mossy.png"));
+	w3d_TextureList_Pop(textureList, LoadTexture("Wood",        "resource/image/wood.png"));
+	w3d_TextureList_Pop(textureList, LoadTexture("ColorStone",  "resource/image/colorstone.png"));
+	w3d_TextureList_Pop(textureList, LoadTexture("Barrel",      "resource/image/barrel.png"));
+	w3d_TextureList_Pop(textureList, LoadTexture("Pillar",      "resource/image/pillar.png"));
+	w3d_TextureList_Pop(textureList, LoadTexture("GreenLight",  "resource/image/greenlight.png"));
 
-	OpenTexture("resource/image/barrel.png");
-	OpenTexture("resource/image/pillar.png");
-	OpenTexture("resource/image/greenlight.png");
+	// Create map
+	w3d_Map* mapLevel1 = w3d_Map_CreateFromRaw(10, 10, (uint8_t*)&rawMapFloor, (uint8_t*)&rawMapWall, (uint8_t*)&rawMapCeiling, textureList);
 
 	// Create a texture
 	SDL_Texture* cameraTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -226,7 +274,7 @@ int main(void) {
 
 	w3d_DestroyCamera(camera);
 	SDL_DestroyTexture(cameraTexture);
-	w3d_CloseMap(mapLevel1);
+	w3d_Map_Close(mapLevel1);
 
 	TTF_CloseFont(font);
 	SDL_DestroyTexture(cameraTexture);

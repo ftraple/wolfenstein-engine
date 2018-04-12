@@ -153,7 +153,6 @@ void w3d_RenderCamera(w3d_Camera* camera, void* viewBuffer) {
 	uint32_t texturePositionX;
 	uint32_t texturePositionY;
 	uint32_t* texturePixel;
-	uint16_t textureIndex;
 
 	FrameData*frameData = camera->frameData;
 
@@ -206,7 +205,7 @@ void w3d_RenderCamera(w3d_Camera* camera, void* viewBuffer) {
 				frameData->side = 1;
 			}
 			//Check if ray has hit a wall
-			if (w3d_GetMapValue(camera->map, frameData->mapX, frameData->mapY) > 0) {
+			if (w3d_Map_GetValue(camera->map, frameData->mapX, frameData->mapY) > 0) {
 				hitWall = true;
 			}
 		}
@@ -220,10 +219,8 @@ void w3d_RenderCamera(w3d_Camera* camera, void* viewBuffer) {
 		}
 
 		// Get texture surface
-		textureIndex = w3d_GetMapValue(camera->map, frameData->mapX, frameData->mapY)-1;
-		SDL_Surface*textureSurface = GetTextureSurface(textureIndex);
-		if (textureSurface == NULL) {
-			printf("textureSurface NULL!\n");
+		w3d_Texture* texture = w3d_Map_GetWallTexture(camera->map, frameData->mapX, frameData->mapY);
+		if (texture == NULL) {
 			continue;
 		}
 
@@ -250,22 +247,22 @@ void w3d_RenderCamera(w3d_Camera* camera, void* viewBuffer) {
 		frameData->wallHitX -= floor(frameData->wallHitX);
 
 		// Calculate X coordinate on the texture
-		texturePositionX = (int)(frameData->wallHitX*(double)textureSurface->w);
+		texturePositionX = (int)(frameData->wallHitX*(double)texture->width);
 		if(frameData->side == 0 && frameData->rayDirectionX > 0) {
-			texturePositionX = textureSurface->w - texturePositionX - 1;
+			texturePositionX = texture->width - texturePositionX - 1;
 		}
 		if(frameData->side == 1 && frameData->rayDirectionY < 0) {
-			texturePositionX = textureSurface->w - texturePositionX - 1;
+			texturePositionX = texture->width - texturePositionX - 1;
 		}
 
 		// Draw the wall line
 		for (int y = frameData->wallStart; y < frameData->wallEnd; ++y) {
 			// 256 and 128 factors to avoid floats
 			uint32_t d = (y * 256) - (camera->height * 128) + (lineHeight * 128);
-			texturePositionY = ((d * textureSurface->h) / lineHeight) / 256;
+			texturePositionY = ((d * texture->height) / lineHeight) / 256;
 			// Get the pixel color in the texture buffer
-			uint32_t textureBufferOffset = (textureSurface->h*texturePositionY)+texturePositionX;
-			texturePixel = (uint32_t*)textureSurface->pixels+textureBufferOffset;
+			uint32_t textureBufferOffset = (texture->height*texturePositionY)+texturePositionX;
+			texturePixel = (uint32_t*)texture->pixelData+textureBufferOffset;
 			// Set the pixel color in the camera view buffer
 			uint32_t viewBufferOffset = (camera->width*y)+x;
 			camera->viewBuffer[viewBufferOffset] = *texturePixel;
@@ -284,9 +281,6 @@ void w3d_RenderCamera(w3d_Camera* camera, void* viewBuffer) {
 
 /*################################################################################*/
 void FloorRender(w3d_Camera* camera) {
-
-	SDL_Surface*FloorSurface = GetTextureSurface(3);
-	SDL_Surface*CeilingSurface = GetTextureSurface(6);
 
 	FrameData*frameData = camera->frameData;
 
@@ -331,17 +325,20 @@ void FloorRender(w3d_Camera* camera) {
 			double currentFloorX = weight * floorXWall + (1.0 - weight) * camera->positionX;
 			double currentFloorY = weight * floorYWall + (1.0 - weight) * camera->positionY;
 
+			w3d_Texture* floorTexture = w3d_Map_GetFloorTexture(camera->map, (uint16_t)currentFloorX, (uint16_t)currentFloorY);
+			w3d_Texture* ceilingTexture = w3d_Map_GetCeilingTexture(camera->map, (uint16_t)currentFloorX, (uint16_t)currentFloorY);
+
 			int floorTexX;
 			int floorTexY;
 
-			floorTexX = (int)(currentFloorX * FloorSurface->w) % FloorSurface->w;
-			floorTexY = (int)(currentFloorY * FloorSurface->h) % FloorSurface->h;
+			floorTexX = (int)(currentFloorX * floorTexture->width) % floorTexture->width;
+			floorTexY = (int)(currentFloorY * floorTexture->height) % floorTexture->height;
 
 			// Floor
-			uint32_t*pixel = (uint32_t*)FloorSurface->pixels+(FloorSurface->w*floorTexY)+floorTexX;
+			uint32_t*pixel = (uint32_t*)floorTexture->pixelData+(floorTexture->width*floorTexY)+floorTexX;
 			camera->viewBuffer[(camera->width*y)+x] = *pixel;
 			// Ceiling
-			pixel = (uint32_t*)CeilingSurface->pixels+(CeilingSurface->w*floorTexY)+floorTexX;
+			pixel = (uint32_t*)ceilingTexture->pixelData+(ceilingTexture->width*floorTexY)+floorTexX;
 			camera->viewBuffer[(camera->width*(camera->height-y))+x] = *pixel;
 		}
 		frameData++;
@@ -436,20 +433,20 @@ void w3d_RotateCamera(w3d_Camera* camera, int32_t stepX) {
 
 /*################################################################################*/
 void w3d_MoveCameraForward(w3d_Camera* camera) {
-	if(w3d_GetMapValue(camera->map, (int)(camera->positionX+camera->directionX*(camera->moveSpeed+camera->wallDistance)), (int)camera->positionY) == 0) {
+	if(w3d_Map_GetValue(camera->map, (int)(camera->positionX+camera->directionX*(camera->moveSpeed+camera->wallDistance)), (int)camera->positionY) == 0) {
 		camera->positionX += camera->directionX*camera->moveSpeed;
 	}
-	if(w3d_GetMapValue(camera->map, (int)camera->positionX, (int)(camera->positionY+camera->directionY*(camera->moveSpeed+camera->wallDistance))) == 0) {
+	if(w3d_Map_GetValue(camera->map, (int)camera->positionX, (int)(camera->positionY+camera->directionY*(camera->moveSpeed+camera->wallDistance))) == 0) {
 		camera->positionY += camera->directionY*camera->moveSpeed;
 	}
 }
 
 /*################################################################################*/
 void w3d_MoveCameraBackward(w3d_Camera* camera) {
-	if(w3d_GetMapValue(camera->map, (int)(camera->positionX-camera->directionX*(camera->moveSpeed+camera->wallDistance)), (int)camera->positionY) == 0) {
+	if(w3d_Map_GetValue(camera->map, (int)(camera->positionX-camera->directionX*(camera->moveSpeed+camera->wallDistance)), (int)camera->positionY) == 0) {
 		camera->positionX -= camera->directionX*camera->moveSpeed;
 	}
-	if(w3d_GetMapValue(camera->map, (int)camera->positionX, (int)(camera->positionY-camera->directionY*(camera->moveSpeed+camera->wallDistance))) == 0) {
+	if(w3d_Map_GetValue(camera->map, (int)camera->positionX, (int)(camera->positionY-camera->directionY*(camera->moveSpeed+camera->wallDistance))) == 0) {
 		camera->positionY -= camera->directionY*camera->moveSpeed;
 	}
 }
@@ -460,10 +457,10 @@ void w3d_MoveCameraLeft(w3d_Camera* camera) {
 	float directionX = camera->directionX * cos(rotation) - camera->directionY * sin(rotation);
 	float directionY = camera->directionX * sin(rotation) + camera->directionY * cos(rotation);
 
-	if(w3d_GetMapValue(camera->map, (int)(camera->positionX-directionX*(camera->moveSpeed+camera->wallDistance)), (int)camera->positionY) == 0) {
+	if(w3d_Map_GetValue(camera->map, (int)(camera->positionX-directionX*(camera->moveSpeed+camera->wallDistance)), (int)camera->positionY) == 0) {
 		camera->positionX -= directionX*camera->moveSpeed;
 	}
-	if(w3d_GetMapValue(camera->map, (int)camera->positionX, (int)(camera->positionY-directionY*(camera->moveSpeed+camera->wallDistance))) == 0) {
+	if(w3d_Map_GetValue(camera->map, (int)camera->positionX, (int)(camera->positionY-directionY*(camera->moveSpeed+camera->wallDistance))) == 0) {
 		camera->positionY -= directionY*camera->moveSpeed;
 	}
 }
@@ -474,10 +471,10 @@ void w3d_MoveCameraRight(w3d_Camera* camera) {
 	float directionX = camera->directionX * cos(rotation) - camera->directionY * sin(rotation);
 	float directionY = camera->directionX * sin(rotation) + camera->directionY * cos(rotation);
 
-	if(w3d_GetMapValue(camera->map, (int)(camera->positionX+directionX*(camera->moveSpeed+camera->wallDistance)), (int)camera->positionY) == 0) {
+	if(w3d_Map_GetValue(camera->map, (int)(camera->positionX+directionX*(camera->moveSpeed+camera->wallDistance)), (int)camera->positionY) == 0) {
 		camera->positionX += directionX*camera->moveSpeed;
 	}
-	if(w3d_GetMapValue(camera->map, (int)camera->positionX, (int)(camera->positionY+directionY*(camera->moveSpeed+camera->wallDistance))) == 0) {
+	if(w3d_Map_GetValue(camera->map, (int)camera->positionX, (int)(camera->positionY+directionY*(camera->moveSpeed+camera->wallDistance))) == 0) {
 		camera->positionY += directionY*camera->moveSpeed;
 	}
 }
