@@ -1,22 +1,23 @@
-/*
- * Texture.h
- *
- *  Created on: 3 de fev de 2017
- *      Author: fabiano
- */
+#ifndef INCLUDE_TEXTURE_H
+#define INCLUDE_TEXTURE_H
 
-#ifndef INCLUDE_TEXTURE_H_
-#define INCLUDE_TEXTURE_H_
-
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <stdint.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
+#include <assert.h>
 
-// Return the texture index
-uint16_t OpenTexture(const char*filename);
+typedef struct w3d_TextureSt w3d_Texture;
+struct w3d_TextureSt {
+	char* name;
+	uint16_t width;
+	uint16_t height;
+	uint32_t* pixelData;
+	size_t pixelDataSize;
+};
 
-SDL_Surface*GetTextureSurface(uint16_t index);
+w3d_Texture* w3d_Texture_CretateFromRaw(const char* name, uint16_t width, uint16_t height, uint32_t* pixelDataABGR);
 
-void CloseTexture(uint16_t index);
+void w3d_Texture_Destroy(w3d_Texture* texture);
 
-#endif /* INCLUDE_TEXTURE_H_ */
+#endif /* INCLUDE_TEXTURE_H */

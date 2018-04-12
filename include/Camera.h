@@ -5,8 +5,8 @@
  *      Author: fabiano
  */
 
-#ifndef CAMERA_H_
-#define CAMERA_H_
+#ifndef CAMERA_H
+#define CAMERA_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,4 +37,4 @@ void w3d_MoveCameraRight(w3d_Camera* camera);
 void w3d_RenderCamera(w3d_Camera* camera, void* viewBuffer);
 
 
-#endif /* CAMERA_H_ */
+#endif /* CAMERA_H */

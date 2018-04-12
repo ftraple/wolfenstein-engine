@@ -1,12 +1,5 @@
-/*
- * Utils.h
- *
- *  Created on: 23 de set de 2016
- *      Author: fabiano
- */
-
-#ifndef UTILS_H_
-#define UTILS_H_
+#ifndef UTILS_H
+#define UTILS_H
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
@@ -17,4 +10,4 @@ SDL_Surface* LoadSurface(const char*imageFile);
 
 void DrawSurface(SDL_Renderer*renderer, SDL_Surface*surface);
 
-#endif /* UTILS_H_ */
+#endif /* UTILS_H */
