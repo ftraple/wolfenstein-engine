@@ -1,7 +1,7 @@
 
 CC = gcc
 CFLAGS = -std=gnu99 -Wall -Wextra -shared -fPIC -ggdb
-LDFLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf -lm
+LDFLAGS = 
 INCLUDE_DIR = include/
 BINARY_DIR = bin/
 BUILD_DIR = build/

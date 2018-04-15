@@ -4,6 +4,7 @@
         "texturelist.h": "c",
         "map.h": "c",
         "texture.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "camera.h": "c"
     }
 }
