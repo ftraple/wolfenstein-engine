@@ -1,10 +1,7 @@
 
-
 #include "Defs.h"
-#include "Utils.h"
 #include "Camera.h"
 #include "Texture.h"
-#include "Map.h"
 
 typedef struct FrameData {
 	int32_t mapX;
@@ -36,55 +33,22 @@ struct w3d_CameraSt {
 	float rotationSpeed;
 	float wallDistance;
 	w3d_Map* map;
+	w3d_SpriteList* spriteList;
 	uint32_t*viewBuffer;
 	size_t viewBufferSize;
 
-	FrameData*frameData;
+	double zBuffer[2048];
+
+	FrameData* frameData;
 };
 
 
-// ### HARD CODE
-// float ZBuffer[640];
-// int spriteOrder[100];
-// float spriteDistance[100];
 
 void FloorRender();
-//void SpriteRender();
-
-// /*################################################################################*/
-// void combSort(int*order, float*dist, int amount)
-// {
-// 	int gap = amount;
-// 	bool swapped = false;
-// 	while (gap > 1 || swapped) {
-// 		//shrink factor 1.3
-// 		gap = (gap * 10) / 13;
-// 		if (gap == 9 || gap == 10) {
-// 			gap = 11;
-// 		}
-// 		if (gap < 1) {
-// 			gap = 1;
-// 		}
-// 		swapped = false;
-// 		for (int i = 0; i < amount - gap; i++) {
-// 			int j = i + gap;
-// 			if (dist[i] < dist[j]) {
-// 				// Swap distance
-// 				float distTmp = dist[j];
-// 				dist[j] = dist[i];
-// 				dist[i] = distTmp;
-// 				// Swap order
-// 				int orderTmp = order[j];
-// 				order[j] = order[i];
-// 				order[i] = orderTmp;
-// 				swapped = true;
-// 			}
-// 		}
-// 	}
-// }
+void SpriteRender();
 
 /*################################################################################*/
-w3d_Camera* w3d_CreateCamera(int width, int height) {
+w3d_Camera* w3d_Camera_Create(int width, int height) {
 
 	w3d_Camera* camera = (w3d_Camera*)malloc(sizeof(w3d_Camera));
 	if (camera == NULL) {
@@ -106,6 +70,7 @@ w3d_Camera* w3d_CreateCamera(int width, int height) {
 	camera->wallDistance = 0.3;
 	camera->viewBufferSize = width*height*sizeof(uint32_t);
 	camera->map = NULL;
+	camera->spriteList = NULL;
 	camera->viewBuffer = NULL;
 	camera->frameData = (FrameData*)malloc(camera->width*sizeof(FrameData));
 	if (camera->frameData == NULL) {
@@ -118,20 +83,27 @@ w3d_Camera* w3d_CreateCamera(int width, int height) {
 }
 
 /*################################################################################*/
-void w3d_DestroyCamera(w3d_Camera* camera) {
+void w3d_Camera_Destroy(w3d_Camera* camera) {
 	assert(camera != NULL);
 	free(camera->frameData);
 	free(camera);
 }
 
 /*################################################################################*/
-void w3d_SetCameraMap(w3d_Camera* camera, w3d_Map* map) {
+void w3d_Camera_SetMap(w3d_Camera* camera, w3d_Map* map) {
+	assert(camera != NULL);
 	camera->map = map;
 }
 
 /*################################################################################*/
-void w3d_RenderCamera(w3d_Camera* camera, void* viewBuffer) {
+void w3d_Camera_SetSpriteList(w3d_Camera* camera, w3d_SpriteList* spriteList) {
+	assert(camera != NULL);
+	camera->spriteList = spriteList;
+}
 
+/*################################################################################*/
+void w3d_Camera_Render(w3d_Camera* camera, void* viewBuffer) {
+	assert(camera != NULL);
 	if (camera->map == NULL) {
 		return;
 	}
@@ -269,13 +241,13 @@ void w3d_RenderCamera(w3d_Camera* camera, void* viewBuffer) {
 		}
 
 		//SET THE ZBUFFER FOR THE SPRITE CASTING
-        //ZBuffer[x] = frameData->perpWallDist; //perpendicular distance is used
+        camera->zBuffer[x] = frameData->perpWallDist; //perpendicular distance is used
 
         frameData++;
 	}
 
 	FloorRender(camera);
-	//SpriteRender(camera);
+	SpriteRender(camera);
 }
 
 
@@ -345,82 +317,79 @@ void FloorRender(w3d_Camera* camera) {
 	}
 }
 
-//void SpriteRender(Camera*camera) {
-//
-//	uint32_t spriteAmount = GetSpriteAmount();
-//
-//
-//	// Sort sprites from far to close
-//	for(int i = 0; i < spriteAmount; i++)
-//	{
-//		spriteOrder[i] = i;
-//		spriteDistance[i] = ((camera->positionX - sprite[i].x) * (camera->positionX - sprite[i].x) + (camera->positionY - sprite[i].y) * (camera->positionY - sprite[i].y)); //sqrt not taken, unneeded
-//	}
-//	combSort(spriteOrder, spriteDistance, spriteAmount);
-//
-//	//after sorting the sprites, do the projection and draw them
-//	for(int i = 0; i < spriteAmount; i++) {
-//
-//		SDL_Surface*spriteSurface = GetTextureSurface(sprite[spriteOrder[i]].texture);
-//
-//		//translate sprite position to relative to camera
-//		float spriteX = sprite[spriteOrder[i]].x - camera->positionX;
-//		float spriteY = sprite[spriteOrder[i]].y - camera->positionY;
-//
-//		//transform sprite with the inverse camera matrix
-//		// [ planeX   dirX ] -1                                       [ dirY      -dirX ]
-//		// [               ]       =  1/(planeX*dirY-dirX*planeY) *   [                 ]
-//		// [ planeY   dirY ]                                          [ -planeY  planeX ]
-//
-//		float invDet = 1.0 / (camera->planeX * camera->directionY - camera->directionX * camera->planeY); //required for correct matrix multiplication
-//
-//		float transformX = invDet * (camera->directionY * spriteX - camera->directionX * spriteY);
-//		float transformY = invDet * (-camera->planeY * spriteX + camera->planeX * spriteY); //this is actually the depth inside the screen, that what Z is in 3D
-//
-//		int spriteScreenX = (int)((camera->width / 2) * (1 + transformX / transformY));
-//
-//		//calculate height of the sprite on screen
-//		int spriteHeight = abs((int)(camera->height/(transformY))); //using "transformY" instead of the real distance prevents fisheye
-//		//calculate lowest and highest pixel to fill in current stripe
-//		int wallStartY = -spriteHeight / 2 + camera->height / 2;
-//		if(wallStartY < 0) wallStartY = 0;
-//		int wallEndY = spriteHeight / 2 + camera->height / 2;
-//		if(wallEndY >= camera->height) wallEndY = camera->height - 1;
-//
-//		//calculate width of the sprite
-//		int spriteWidth = abs( (int)(camera->height/(transformY)));
-//		int wallStartX = -spriteWidth / 2 + spriteScreenX;
-//		if(wallStartX < 0) wallStartX = 0;
-//		int wallEndX = spriteWidth / 2 + spriteScreenX;
-//		if(wallEndX >= camera->width) wallEndX = camera->width - 1;
-//
-//		//loop through every vertical stripe of the sprite on screen
-//		for(int stripe = wallStartX; stripe < wallEndX; stripe++) {
-//			int texX = (int)(256 * (stripe - (-spriteWidth / 2 + spriteScreenX)) * TEXT_WIDTH / spriteWidth) / 256;
-//			//the conditions in the if are:
-//			//1) it's in front of camera plane so you don't see things behind you
-//			//2) it's on the screen (left)
-//			//3) it's on the screen (right)
-//			//4) ZBuffer, with perpendicular distance
-//
-//			if(transformY > 0 && stripe > 0 && stripe < camera->width && transformY < ZBuffer[stripe]) {
-//				for(int y = wallStartY; y < wallEndY; y++) {
-//					int d = (y) * 256 - camera->height * 128 + spriteHeight * 128; //256 and 128 factors to avoid floats
-//					int texY = ((d * TEXT_HEIGHT) / spriteHeight) / 256;
-//
-//					uint32_t*pixelColor = (uint32_t*)spriteSurface->pixels+(spriteSurface->w*texY)+texX;
-//					if ((*pixelColor & 0xFFFFFF00) != 0) { //paint pixel if it isn't black, black is the invisible color
-//						camera->viewBuffer[(camera->width*y)+stripe] = *pixelColor;
-//					}
-//				}
-//			}
-//		}
-//	}
-//}
+void SpriteRender(w3d_Camera* camera) {
 
+	if (camera->spriteList == NULL) {
+		return;
+	}
+
+	size_t spriteAmount = w3d_SpriteList_GetSize(camera->spriteList);
+
+	w3d_SpriteList_SortFromFarToClose(camera->spriteList, camera->positionX, camera->positionY);
+
+	// After sorting the sprites, do the projection and draw them
+	for(size_t i = 0; i < spriteAmount; i++) {
+
+		w3d_Sprite* sprite = w3d_SpriteList_GetSprite(camera->spriteList, i);
+		w3d_Texture* texture = w3d_Sprite_GetTexture(sprite);
+
+		//translate sprite position relative to camera
+		float spriteX = w3d_Sprite_GetPositionX(sprite) - camera->positionX;
+		float spriteY = w3d_Sprite_GetPositionY(sprite) - camera->positionY;
+
+		//transform sprite with the inverse camera matrix
+		// [ planeX   dirX ] -1                                       [ dirY      -dirX ]
+		// [               ]       =  1/(planeX*dirY-dirX*planeY) *   [                 ]
+		// [ planeY   dirY ]                                          [ -planeY  planeX ]
+
+		float invDet = 1.0 / (camera->planeX * camera->directionY - camera->directionX * camera->planeY); //required for correct matrix multiplication
+
+		float transformX = invDet * (camera->directionY * spriteX - camera->directionX * spriteY);
+		float transformY = invDet * (-camera->planeY * spriteX + camera->planeX * spriteY); //this is actually the depth inside the screen, that what Z is in 3D
+
+		int spriteScreenX = (int)((camera->width / 2) * (1 + transformX / transformY));
+
+		//calculate height of the sprite on screen
+		int spriteHeight = abs((int)(camera->height/(transformY))); //using "transformY" instead of the real distance prevents fisheye
+		//calculate lowest and highest pixel to fill in current stripe
+		int wallStartY = -spriteHeight / 2 + camera->height / 2;
+		if(wallStartY < 0) wallStartY = 0;
+		int wallEndY = spriteHeight / 2 + camera->height / 2;
+		if(wallEndY >= camera->height) wallEndY = camera->height - 1;
+
+		//calculate width of the sprite
+		int spriteWidth = abs( (int)(camera->height/(transformY)));
+		int wallStartX = -spriteWidth / 2 + spriteScreenX;
+		if(wallStartX < 0) wallStartX = 0;
+		int wallEndX = spriteWidth / 2 + spriteScreenX;
+		if(wallEndX >= camera->width) wallEndX = camera->width - 1;
+
+		//loop through every vertical stripe of the sprite on screen
+		for(int stripe = wallStartX; stripe < wallEndX; stripe++) {
+			int texX = (int)(256 * (stripe - (-spriteWidth / 2 + spriteScreenX)) * texture->width / spriteWidth) / 256;
+			//the conditions in the if are:
+			//1) it's in front of camera plane so you don't see things behind you
+			//2) it's on the screen (left)
+			//3) it's on the screen (right)
+			//4) ZBuffer, with perpendicular distance
+
+			if(transformY > 0 && stripe > 0 && stripe < camera->width && transformY < camera->zBuffer[stripe]) {
+				for(int y = wallStartY; y < wallEndY; y++) {
+					int d = (y) * 256 - camera->height * 128 + spriteHeight * 128; //256 and 128 factors to avoid floats
+					int texY = ((d * texture->height) / spriteHeight) / 256;
+
+					uint32_t*pixelColor = (uint32_t*)texture->pixelData+(texture->width*texY)+texX;
+					if ((*pixelColor & 0x00FFFFFF) != 0) { //paint pixel if it isn't black, black is the invisible color
+						camera->viewBuffer[(camera->width*y)+stripe] = *pixelColor;
+					}
+				}
+			}
+		}
+	}
+}
 
 /*################################################################################*/
-void w3d_RotateCamera(w3d_Camera* camera, int32_t stepX) {
+void w3d_Camera_Rotate(w3d_Camera* camera, int32_t stepX) {
 	float rotSpeed = (float)stepX*camera->rotationSpeed;
 	float oldDirX = camera->directionX;
 	float oldPlaneX = camera->planeX;
@@ -432,7 +401,7 @@ void w3d_RotateCamera(w3d_Camera* camera, int32_t stepX) {
 }
 
 /*################################################################################*/
-void w3d_MoveCameraForward(w3d_Camera* camera) {
+void w3d_Camera_MoveForward(w3d_Camera* camera) {
 	if(w3d_Map_GetValue(camera->map, (int)(camera->positionX+camera->directionX*(camera->moveSpeed+camera->wallDistance)), (int)camera->positionY) == 0) {
 		camera->positionX += camera->directionX*camera->moveSpeed;
 	}
@@ -442,7 +411,7 @@ void w3d_MoveCameraForward(w3d_Camera* camera) {
 }
 
 /*################################################################################*/
-void w3d_MoveCameraBackward(w3d_Camera* camera) {
+void w3d_Camera_MoveBackward(w3d_Camera* camera) {
 	if(w3d_Map_GetValue(camera->map, (int)(camera->positionX-camera->directionX*(camera->moveSpeed+camera->wallDistance)), (int)camera->positionY) == 0) {
 		camera->positionX -= camera->directionX*camera->moveSpeed;
 	}
@@ -452,7 +421,7 @@ void w3d_MoveCameraBackward(w3d_Camera* camera) {
 }
 
 /*################################################################################*/
-void w3d_MoveCameraLeft(w3d_Camera* camera) {
+void w3d_Camera_MoveLeft(w3d_Camera* camera) {
 	float rotation = 80.0;
 	float directionX = camera->directionX * cos(rotation) - camera->directionY * sin(rotation);
 	float directionY = camera->directionX * sin(rotation) + camera->directionY * cos(rotation);
@@ -466,7 +435,7 @@ void w3d_MoveCameraLeft(w3d_Camera* camera) {
 }
 
 /*################################################################################*/
-void w3d_MoveCameraRight(w3d_Camera* camera) {
+void w3d_Camera_MoveRight(w3d_Camera* camera) {
 	double rotation = 80.0;
 	float directionX = camera->directionX * cos(rotation) - camera->directionY * sin(rotation);
 	float directionY = camera->directionX * sin(rotation) + camera->directionY * cos(rotation);

@@ -11,6 +11,8 @@
 #include "Camera.h"
 #include "Texture.h"
 #include "TextureList.h"
+#include "Sprite.h"
+#include "SpriteList.h"
 
 
 bool keyUpPressed = false;
@@ -147,23 +149,23 @@ bool Move(SDL_Window*window, w3d_Camera* camera) {
 
 		// Run multiple times per frame.
 		if (event.type == SDL_MOUSEMOTION) {
-			w3d_RotateCamera(camera, (SCREEN_WIDTH/2)-event.motion.x);
+			w3d_Camera_Rotate(camera, (SCREEN_WIDTH/2)-event.motion.x);
 			SDL_WarpMouseInWindow(window, SCREEN_WIDTH/2, SCREEN_HEIGHT/2);
 		}
 	}
 
 	// Run just one time per frame.
 	if (keyUpPressed == true) {
-		w3d_MoveCameraForward(camera);
+		w3d_Camera_MoveForward(camera);
 	}
 	else if (keyDownPressed == true) {
-		w3d_MoveCameraBackward(camera);
+		w3d_Camera_MoveBackward(camera);
 	}
 	if (keyLeftPressed == true) {
-		w3d_MoveCameraLeft(camera);
+		w3d_Camera_MoveLeft(camera);
 	}
 	else if (keyRightPressed == true) {
-		w3d_MoveCameraRight(camera);
+		w3d_Camera_MoveRight(camera);
 	}
 
 	return true;
@@ -215,19 +217,29 @@ int main(void) {
 	w3d_TextureList_Pop(textureList, LoadTexture("Mossy",       "resource/image/mossy.png"));
 	w3d_TextureList_Pop(textureList, LoadTexture("Wood",        "resource/image/wood.png"));
 	w3d_TextureList_Pop(textureList, LoadTexture("ColorStone",  "resource/image/colorstone.png"));
-	w3d_TextureList_Pop(textureList, LoadTexture("Barrel",      "resource/image/barrel.png"));
-	w3d_TextureList_Pop(textureList, LoadTexture("Pillar",      "resource/image/pillar.png"));
-	w3d_TextureList_Pop(textureList, LoadTexture("GreenLight",  "resource/image/greenlight.png"));
 
 	// Create map
 	w3d_Map* mapLevel1 = w3d_Map_CreateFromRaw(10, 10, (uint8_t*)&rawMapFloor, (uint8_t*)&rawMapWall, (uint8_t*)&rawMapCeiling, textureList);
 
+	// Create sprites
+	w3d_Sprite* barrelSprite = w3d_Sprite_CreateFromRaw("Barrel", 3, 3, W3D_SPRITE_ANGLE_0, true, LoadTexture("Barrel", "resource/image/barrel.png"));
+	w3d_Sprite* pillarSprite = w3d_Sprite_CreateFromRaw("Pillar", 3, 7, W3D_SPRITE_ANGLE_0, true, LoadTexture("Pillar", "resource/image/pillar.png"));
+	w3d_Sprite* greenLightSprite = w3d_Sprite_CreateFromRaw("GreenLight", 5, 5, W3D_SPRITE_ANGLE_0, true, LoadTexture("Barrel", "resource/image/greenlight.png"));
+
+    w3d_SpriteList* spriteList = w3d_SpriteList_Create(3);
+	w3d_SpriteList_Add(spriteList, barrelSprite);
+	w3d_SpriteList_Add(spriteList, pillarSprite);
+	w3d_SpriteList_Add(spriteList, greenLightSprite);
+
 	// Create a texture
 	SDL_Texture* cameraTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH, SCREEN_HEIGHT);
 
+
+
 	// Create a new camera
-	w3d_Camera* camera = w3d_CreateCamera(SCREEN_WIDTH, SCREEN_HEIGHT);
-	w3d_SetCameraMap(camera, mapLevel1);
+	w3d_Camera* camera = w3d_Camera_Create(SCREEN_WIDTH, SCREEN_HEIGHT);
+	w3d_Camera_SetMap(camera, mapLevel1);
+	w3d_Camera_SetSpriteList(camera, spriteList);
 
 	TTF_Font*font = TTF_OpenFont("resource/font/FreeSansBold.ttf", 32);
 
@@ -235,12 +247,6 @@ int main(void) {
 	float lastTime = SDL_GetTicks();
 	uint32_t frameRate = 0;
 	uint32_t frameCount = 0;
-
-//	SDL_Delay(300);
-//	SDL_UpdateTexture(cameraTexture, NULL, GetCameraBuffer(camera1), SCREEN_WIDTH*sizeof(Uint32));
-//	SDL_RenderCopy(renderer, cameraTexture, NULL, NULL);
-//	SDL_RenderPresent(renderer);
-//	SDL_Delay(5000);
 
 	char frameRateText[20];
 	SDL_Color color = {255, 255, 255, 255};
@@ -253,7 +259,7 @@ int main(void) {
 		SDL_RenderClear(renderer);
 
         SDL_LockTexture(cameraTexture, NULL, &mPixels, &mPitch);
-		w3d_RenderCamera(camera, mPixels);
+		w3d_Camera_Render(camera, mPixels);
 		SDL_UnlockTexture(cameraTexture);
 		SDL_RenderCopy(renderer, cameraTexture, NULL, NULL);
 
@@ -272,7 +278,7 @@ int main(void) {
 		}
 	}
 
-	w3d_DestroyCamera(camera);
+	w3d_Camera_Destroy(camera);
 	SDL_DestroyTexture(cameraTexture);
 	w3d_Map_Close(mapLevel1);
 

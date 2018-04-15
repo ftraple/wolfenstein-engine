@@ -1,60 +1,61 @@
-// #ifndef INCLUDE_SPRITE_H
-// #define INCLUDE_SPRITE_H
+#ifndef INCLUDE_SPRITE_H
+#define INCLUDE_SPRITE_H
 
-// #include <stdint.h>
-// #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <assert.h>
 
-// typedef struct Sprite Sprite;
+#include "Defs.h"
+#include "Texture.h"
 
-// typedef enum {
-// 	ANGLE_0 = 0,
-// 	ANGLE_45 = 45,
-// 	ANGLE_90 = 90,
-// 	ANGLE_135 = 135,
-// 	ANGLE_180 = 180,
-// 	ANGLE_225 = 225,
-// 	ANGLE_270 = 270,
-// 	ANGLE_315 = 315
-// } SpriteDirection;
+typedef struct w3d_SpriteSt w3d_Sprite;
 
-// Sprite*CreateSprite( const char*textureFilename,
-// 					 uint16_t positionX,
-// 					 uint16_t positionY,
-// 					 uint16_t width,
-// 					 uint16_t height,
-// 					 SpriteDirection directionAngle,
-// 					 bool visible);
+typedef enum {
+	W3D_SPRITE_ANGLE_0 = 0,
+	W3D_SPRITE_ANGLE_45 = 45,
+	W3D_SPRITE_ANGLE_90 = 90,
+	W3D_SPRITE_ANGLE_135 = 135,
+	W3D_SPRITE_ANGLE_180 = 180,
+	W3D_SPRITE_ANGLE_225 = 225,
+	W3D_SPRITE_ANGLE_270 = 270,
+	W3D_SPRITE_ANGLE_315 = 315
+} w3d_SpriteDirection;
 
-// void DestroySprite();
+w3d_Sprite* w3d_Sprite_CreateFromRaw(
+    const char* name,
+	int32_t positionX,
+	int32_t positionY,
+	w3d_SpriteDirection directionAngle,
+	bool visible,
+	w3d_Texture* texture);
 
-// void SetSpriteVisible(Sprite*sprite, bool visible);
+void w3d_Sprite_Destroy(w3d_Sprite* sprite);
 
-// void SetSpritePosition(Sprite*sprite, uint16_t positionX, uint16_t positionY);
+int32_t w3d_Sprite_GetPositionX(w3d_Sprite* sprite);
 
-// uint16_t GetSpritePositionX(Sprite*sprite);
+int32_t w3d_Sprite_GetPositionY(w3d_Sprite* sprite);
 
-// uint16_t GetSpritePositionY(Sprite*sprite);
+w3d_Texture* w3d_Sprite_GetTexture(w3d_Sprite* sprite);
 
-// void SetSpriteDirectionAngle(Sprite*sprite, SpriteDirection directionAngle);
+// Sprite animation
 
-// // Sprite animation
+// int16_t w3d_Sprite_CreateAnimmation(
+//     w3d_Sprite* sprite,
+// 	uint16_t start,
+// 	uint16_t size,
+// 	uint16_t frameRate,
+// 	bool loopActive);
 
-// int16_t CreateSpriteAnim(Sprite*sprite,
-// 						 uint16_t start,
-// 						 uint16_t size,
-// 						 uint16_t frameRate,
-// 						 bool loopActive);
+// void w3d_Sprite_DestroyAnimation(int16_t animIndex);
 
-// void DestroySpriteAnim(int16_t animIndex);
+// void w3d_Sprite_PlayAnimation(int16_t animIndex);
 
-// void PlaySpriteAnim(int16_t animIndex);
+// void w3d_Sprite_PauseAnimation(int16_t animIndex);
 
-// void PauseSpriteAnim(int16_t animIndex);
+// void w3d_Sprite_StopAnimation(int16_t animIndex);
 
-// void StopSpriteAnim(int16_t animIndex);
+// void w3d_Sprite_SetAnimationLoop(int16_t animIndex, bool loopActive);
 
-// void SetSpriteAnimLoop(int16_t animIndex, bool loopActive);
-
-
-
-// #endif /* INCLUDE_SPRITE_H */
+#endif /* INCLUDE_SPRITE_H */
