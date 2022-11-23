@@ -1,12 +1,13 @@
-#ifndef INCLUDE_TEXTURE_LIST_H
-#define INCLUDE_TEXTURE_LIST_H
+#ifndef W3D_TEXTURE_LIST_H_
+#define W3D_TEXTURE_LIST_H_
 
+#include <assert.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
-#include <stdbool.h>
 #include <string.h>
-#include <assert.h>
+
 #include "Texture.h"
 
 typedef struct w3d_TextureListSt w3d_TextureList;
@@ -19,4 +20,4 @@ uint16_t w3d_TextureList_Pop(w3d_TextureList* textureList, w3d_Texture* texture)
 
 w3d_Texture* w3d_TextureList_GetByIndex(w3d_TextureList* textureList, uint16_t index);
 
-#endif /* INCLUDE_TEXTURE_LIST_H */
+#endif  // W3D_TEXTURE_LIST_H_

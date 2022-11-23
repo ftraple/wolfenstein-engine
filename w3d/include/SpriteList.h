@@ -1,11 +1,11 @@
-#ifndef INCLUDE_SPRITE_LIST_H
-#define INCLUDE_SPRITE_LIST_H
+#ifndef W3D_SPRITE_LIST_H_
+#define W3D_SPRITE_LIST_H_
 
+#include <assert.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <assert.h>
 
 #include "Sprite.h"
 
@@ -23,4 +23,4 @@ w3d_Sprite* w3d_SpriteList_GetSprite(w3d_SpriteList* spriteList, size_t index);
 
 void w3d_SpriteList_SortFromFarToClose(w3d_SpriteList* spriteList, double positionX, double positionY);
 
-#endif /* INCLUDE_SPRITE_H */
+#endif  // W3D_SPRITE_LIST_H_

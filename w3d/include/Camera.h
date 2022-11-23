@@ -1,11 +1,11 @@
-#ifndef CAMERA_H
-#define CAMERA_H
+#ifndef W3D_CAMERA_H_
+#define W3D_CAMERA_H_
 
+#include <assert.h>
+#include <math.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
-#include <math.h>
-#include <assert.h>
 
 #include "Map.h"
 #include "Sprite.h"
@@ -33,5 +33,4 @@ void w3d_Camera_MoveRight(w3d_Camera* camera);
 
 void w3d_Camera_Render(w3d_Camera* camera, void* viewBuffer);
 
-
-#endif /* CAMERA_H */
+#endif  // W3D_CAMERA_H_

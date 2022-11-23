@@ -18,7 +18,7 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 
 # Set the library source files
 set(SOURCE_FILES 
-    main.c
+    Main.c
 )
 
 # Generate the library
